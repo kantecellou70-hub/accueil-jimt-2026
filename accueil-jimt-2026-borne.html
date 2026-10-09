@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Accueil JIMT 2026</title>
+<meta name="theme-color" content="#1d4636">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+/* Layout : une colonne de travail (compteurs, recherche, liste) + colonne étroite des dernières arrivées. Système de polices, une seule couleur d'accent. */
+:root{
+  --bg:#f6f7f6; --surface:#ffffff; --ink:#141a17; --muted:#66706b; --line:#e2e6e3;
+  --accent:#17663f; --accent-ink:#ffffff; --accent-soft:#e7f3ec; --warn:#a15c00; --warn-soft:#fdf1df; --bad:#b3261e;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --surface:#1a1f1c; --ink:#e9eeeb; --muted:#9aa5a0; --line:#2c3430;
+  --accent:#5cc38c; --accent-ink:#0d1a12; --accent-soft:#1c3226; --warn:#f0b35a; --warn-soft:#3a2b14; --bad:#f2867d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1a1f1c; --ink:#e9eeeb; --muted:#9aa5a0; --line:#2c3430;
+  --accent:#5cc38c; --accent-ink:#0d1a12; --accent-soft:#1c3226; --warn:#f0b35a; --warn-soft:#3a2b14; --bad:#f2867d; color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.4;margin:0;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{padding-inline:16px;padding-block:14px 28px;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
+.brand h1{font-size:1.3rem;font-weight:700;margin:0;line-height:1.2}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:10px 16px;min-height:48px;font-weight:600;font-size:.95rem}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.kola{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:var(--bad);background:transparent}
+.btn:active{transform:translateY(1px)}
+.link{border:0;background:none;color:var(--muted);font-size:.85rem;text-decoration:underline;padding:6px 4px;min-height:36px}
+
+.counts{display:flex;flex-wrap:wrap;gap:6px 28px;align-items:baseline;font-size:.95rem;color:var(--muted)}
+.counts b{color:var(--ink);font-size:1.6rem;font-variant-numeric:tabular-nums;margin-right:4px}
+.counts .main-c b{color:var(--accent);font-size:2rem}
+.bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:-6px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+
+.search{position:relative}
+.search input{width:100%;font-size:1.3rem;padding:16px 52px 16px 18px;border:2px solid var(--ink);border-radius:10px;background:var(--surface);min-height:62px}
+.search input:focus{border-color:var(--accent);outline:none}
+.search .clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:1.6rem;width:46px;height:46px;color:var(--muted)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;min-height:42px;font-weight:600;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.7;margin-left:4px}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:20px;align-items:start}
+.results{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0;overflow:hidden}
+.card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.card:first-child{border-top:0}
+.card .no{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem;text-align:right}
+.card.arrived{background:var(--accent-soft)}
+.card .who{min-width:0}
+.card .name{font-size:1.1rem;font-weight:700;overflow-wrap:anywhere}
+.card .meta{color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}
+.tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;font-size:.78rem;font-weight:600;color:var(--muted)}
+.tag.cat-Invité{display:none}
+.tag.cat-Officiel,.tag.cat-Intervenant{color:var(--accent)}
+.tag.walk{color:var(--warn)}
+.act{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.act .btn.primary{min-width:130px}
+.act .time{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700;font-size:1.05rem;padding-right:4px}
+.act .undo,.act .edit{border:0;background:none;color:var(--muted);font-size:.85rem;text-decoration:underline;padding:6px 4px;min-height:36px;font-weight:400}
+
+.empty{padding:24px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.empty p{margin:0;color:var(--muted)}
+.more{color:var(--muted);font-size:.9rem;text-align:center;padding:10px;border-top:1px solid var(--line)}
+
+aside.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+aside.side h2{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:4px 0 10px;font-weight:600}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow:auto}
+.log li{display:grid;grid-template-columns:50px minmax(0,1fr);gap:6px;font-size:.9rem}
+.log time{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+.log span{overflow-wrap:anywhere}
+.save{font-size:.8rem;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.save.bad{color:var(--bad)}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 24px) 16px 24px;z-index:20;overflow:auto}
+.sheet{background:var(--surface);border-radius:12px;width:100%;max-width:600px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.sheet h2{font-weight:700;margin:0;font-size:1.25rem}
+.sheet p{margin:0;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-weight:600;font-size:.9rem}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg);font-size:1.05rem;min-height:50px}
+.field textarea{min-height:150px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.hint{font-size:.85rem;color:var(--muted)}
+.warnbox{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:8px;font-weight:600;z-index:30;max-width:calc(100% - 32px);text-align:center}
+
+@media (max-width:860px){.main{grid-template-columns:minmax(0,1fr)} aside.side{position:static}}
+@media (max-width:600px){
+  .card{grid-template-columns:32px minmax(0,1fr)}
+  .act{grid-column:2;justify-content:flex-start}
+  .grid2{grid-template-columns:1fr}
+  .search input{font-size:1.1rem}
+  .counts{gap:4px 18px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+#printArea{display:none}
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm}
+  html,body{background:#fff!important;color:#000!important;height:auto}
+  .wrap,#overlay,#toast{display:none!important}
+  #printArea{display:block!important;font-family:var(--f-body);font-size:10pt;color:#000}
+  #printArea h1{font-family:var(--f-body);font-size:15pt;margin:0;color:#1d4636}
+  #printArea .sub{margin:2px 0 0;font-size:9.5pt;color:#333}
+  #printArea .theme{font-style:italic;font-size:9pt;margin:6px 0 10px;color:#333}
+  #printArea .sum{display:flex;gap:18px;flex-wrap:wrap;border:1px solid #999;padding:6px 10px;margin:0 0 10px;font-size:9.5pt}
+  #printArea .sum b{font-size:11pt}
+  #printArea table{width:100%;border-collapse:collapse;font-size:8.8pt}
+  #printArea th{background:#e3ece6!important;text-align:left;border:1px solid #888;padding:4px 5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printArea td{border:1px solid #aaa;padding:3px 5px;vertical-align:top}
+  #printArea tr{break-inside:avoid}
+  #printArea thead{display:table-header-group}
+  #printArea td.num,#printArea td.h{font-variant-numeric:tabular-nums;white-space:nowrap}
+  #printArea .foot{margin-top:14px;display:flex;justify-content:space-between;font-size:9pt}
+}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Accueil · Journée de la Médecine traditionnelle</h1>
+      <p>10 octobre 2026 · Cité des Sciences, Rogbanè</p>
+    </div>
+    <div class="tools">
+      <button class="btn kola" id="btnWalkin" type="button">+ Inscrire sur place</button>
+      <button class="btn" id="btnMenu" type="button">Liste et export</button>
+      <button class="btn ghost" id="btnFull" type="button">Plein écran</button>
+    </div>
+  </header>
+
+  <div class="counts" aria-label="Compteurs">
+    <span class="main-c"><b id="sPresent">0</b>présents</span>
+    <span><b id="sInv">0</b>invités arrivés</span>
+    <span><b id="sOff">0</b>officiels et intervenants</span>
+    <span><b id="sWalk">0</b>sur place</span>
+  </div>
+  <div class="bar"><i id="sBar"></i></div>
+
+  <div class="search">
+    <input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Rechercher un nom, une fonction ou un N°" aria-label="Rechercher un invité">
+    <button class="clear" id="qClear" type="button" aria-label="Effacer la recherche">×</button>
+  </div>
+  <div class="filters" role="group" aria-label="Filtrer">
+    <button class="chip" data-f="all" aria-pressed="true" type="button">Tous<span class="n" id="nAll"></span></button>
+    <button class="chip" data-f="wait" aria-pressed="false" type="button">À accueillir<span class="n" id="nWait"></span></button>
+    <button class="chip" data-f="in" aria-pressed="false" type="button">Arrivés<span class="n" id="nIn"></span></button>
+    <button class="chip" data-f="walk" aria-pressed="false" type="button">Sur place<span class="n" id="nWalk"></span></button>
+  </div>
+
+  <div class="main">
+    <section class="results" id="results" aria-live="polite"></section>
+    <aside class="side">
+      <h2>Dernières arrivées</h2>
+      <ol class="log" id="log"></ol>
+      <div class="save" id="saveState">Enregistrement sur cet appareil…</div>
+    </aside>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" hidden></div>
+<div id="toast" class="toast" hidden></div>
+<div id="printArea"></div>
+
+<script>
+(function(){
+"use strict";
+var KEY="jimt2026_accueil_v2";
+var CATS=["Invité","Officiel","Intervenant","Tradipraticien","Presse","Partenaire","Organisation"];
+var OFFCATS={"Officiel":1,"Intervenant":1};
+
+/* Liste officielle des invités (fichier du 9 octobre 2026), N° conservés */
+var SEED=[["Pr BALDE Mamadou Aliou", "Président", "ASG", "Officiel"], ["Pr DIALLO Mamadou Saliou", "", "", "Invité"], ["Pr DIALLO Abdoulaye Baniré", "Directeur", "Cité des Sciences", "Officiel"], ["Pr BALDE Elhadj Saïdou", "Présentation IRDPMAG", "IRDPMAG", "Intervenant"], ["Pr TRAORE Mohamed Sahar", "Présentation IRBAG", "IRBAG", "Intervenant"], ["Pr SOW Mamadou Saliou", "Intervention FSTS", "FSTS UGANC", "Intervenant"], ["Pr TOUNKARA Thierno Mamadou", "Intervention FSTS", "FSTS UGANC", "Intervenant"], ["Dr TOURE Ansoumane", "Sirop antitussif à base de Dissotis rotundifolia", "", "Intervenant"], ["Dr CAMARA Kalil Paulia", "Présentation AMB-PHARMA", "AMB-PHARMA", "Intervenant"], ["Dre CAMARA Aïssata", "Valorisation et validation des médicaments traditionnels", "", "Intervenant"], ["Pr SOW Oumou Younoussa", "Présidente, Collège des Sciences de la Santé", "", "Intervenant"], ["Directeur de l'ISSMV Dalaba", "Directeur", "Institut Supérieur des Sciences et de Médecine Vétérinaire (ISSMV) Dalaba", "Invité"], ["Coordinateur du Programme de lutte contre le VIH et les Hépatites", "Coordinateur", "Programme de lutte contre le VIH et les Hépatites", "Invité"], ["Secrétaire Général du CNLS", "Secrétaire Général", "Comité National de Lutte contre le SIDA", "Invité"], ["Représentant de l'OMS en Guinée", "Représentant", "OMS", "Officiel"], ["Représentant de la CEDEAO en Guinée", "Représentant", "Communauté Économique des États de l'Afrique de l'Ouest (CEDEAO)", "Officiel"], ["Ambassadeur des États-Unis en Guinée", "Ambassadeur", "Ambassade des États-Unis", "Officiel"], ["Ambassadeur de la Fédération de Russie en Guinée", "Ambassadeur", "Ambassade de Russie", "Officiel"], ["Ambassadeur de la République Populaire de Chine en Guinée", "Ambassadeur", "Ambassade de Chine", "Officiel"], ["Ambassadeur de la République de l'Inde", "Ambassadeur", "Ambassade de l'Inde", "Officiel"], ["Ambassadeur de la République de Cuba", "Ambassadeur", "Ambassade de Cuba", "Officiel"], ["Ministre de l'Environnement et du Développement Durable", "Ministre", "Ministère de l'Environnement et du Développement Durable", "Officiel"], ["Ministre de l'Agriculture", "Ministre", "Ministère de l'Agriculture", "Officiel"], ["Président du Comité Stratégique Simandou 2040", "Président", "Comité Stratégique Simandou 2040", "Officiel"], ["Ambassadeur de la République Française en Guinée", "Ambassadeur", "Ambassade de France", "Officiel"], ["Ministre de la Santé et de l'Hygiène Publique", "Ministre", "MSHP", "Officiel"], ["Direction Nationale de la Santé Publique", "Représentant", "MSHP", "Invité"], ["Mr KOUYATE Elhadj Siriman", "", "", "Invité"], ["Représentant d'ENABEL en Guinée", "Représentant", "Agence Belge de Coopération Internationale (ENABEL)", "Officiel"], ["Mr BALDE Abdoulaye Yéro", "", "", "Invité"], ["Mme SIDIBE Diaka", "", "", "Invité"], ["Directrice Générale de la Recherche Scientifique", "Directrice Générale", "Recherche Scientifique", "Invité"], ["Dr DIANE Sere", "", "", "Invité"], ["Dr KOUROUMA Ansoumane", "", "", "Invité"], ["Dr BAH Tanou Valdez", "", "", "Invité"], ["Dr SYLLA Ibrahima Kalil", "", "", "Invité"], ["Mr SANGBE Ouo Ouo", "", "", "Invité"], ["Mr Mamadou Alpha", "", "", "Invité"], ["Dr Abdoul Majid", "", "", "Invité"], ["Dr Boniface", "", "", "Invité"], ["Dr Aude", "", "", "Invité"], ["Mme KABA Sanassa", "", "", "Invité"], ["Dr DIALLO Oumar Mouctar", "", "", "Invité"], ["Dr BAH Thierno Dardaye", "", "", "Invité"], ["Directrice du CIRD", "Directrice", "CIRD", "Invité"], ["Recteur de l'Université Kofi Annan", "Recteur", "Université Kofi Annan de Guinée", "Invité"], ["Recteur de l'Université La Source", "Recteur", "Université La Source", "Invité"], ["Directeur de l'IREG", "Directeur", "Institut de Recherche en Environnement de Guinée (IREG)", "Invité"], ["Président des Institutions de la Recherche Scientifique", "Président", "Institutions de la Recherche Scientifique", "Invité"], ["Président de l'Ordre des Médecins de Guinée", "Président", "Ordre des Médecins de Guinée", "Invité"], ["Président de l'Ordre des Pharmaciens de Guinée", "Président", "Ordre des Pharmaciens de Guinée", "Invité"], ["Directeur National de la DNSCMT", "Directeur National", "Direction Nationale de la Santé Communautaire et de la Médecine Traditionnelle", "Officiel"], ["Ministre de l'Enseignement Supérieur, de la Recherche Scientifique et de l'Innovation", "Ministre", "MESRS", "Officiel"]];
+
+var state={guests:[],filter:"all",q:""};
+var storageOK=true;
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function norm(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim()}
+function esc(s){return (s||"").toString().replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
+function hhmm(iso){if(!iso)return"";var d=new Date(iso);return String(d.getHours()).padStart(2,"0")+"h"+String(d.getMinutes()).padStart(2,"0")}
+function mk(nom,fonction,structure,categorie,source){
+  return {id:uid(),nom:(nom||"").trim(),fonction:(fonction||"").trim(),structure:(structure||"").trim(),
+    categorie:CATS.indexOf(categorie)>=0?categorie:guessCat(categorie),telephone:"",source:source||"liste",arrivee:null,note:""};
+}
+function guessCat(c){var n=norm(c);for(var i=0;i<CATS.length;i++){if(norm(CATS[i])===n)return CATS[i]}
+  if(/offici|minist|autorit/.test(n))return"Officiel";if(/interv|paneli|orateur/.test(n))return"Intervenant";
+  if(/presse|journal|media/.test(n))return"Presse";if(/tradi/.test(n))return"Tradipraticien";if(/parten/.test(n))return"Partenaire";
+  if(/orga|staff|protocole/.test(n))return"Organisation";return"Invité"}
+
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&Array.isArray(d.guests)){state.guests=d.guests;return}}}
+  catch(e){storageOK=false}
+  state.guests=SEED.map(function(r,i){var g=mk(r[0],r[1],r[2],r[3],"liste");g.n=i+1;return g});
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify({v:1,saved:new Date().toISOString(),guests:state.guests}));storageOK=true}
+  catch(e){storageOK=false}
+  var el=document.getElementById("saveState");
+  if(storageOK){el.className="save";el.textContent="Enregistré sur cet appareil à "+hhmm(new Date().toISOString())+". Exportez régulièrement."}
+  else{el.className="save bad";el.textContent="Enregistrement impossible sur ce navigateur. Exportez le fichier CSV toutes les 15 minutes."}
+}
+
+function isOff(g){return !!OFFCATS[g.categorie]}
+function match(g,tokens){if(!tokens.length)return true;var h=g._h||(g._h=norm((g.n?g.n+" ":"")+g.nom+" "+g.structure+" "+g.fonction+" "+g.categorie+" "+g.telephone));
+  for(var i=0;i<tokens.length;i++){if(h.indexOf(tokens[i])<0)return false}return true}
+function passFilter(g){switch(state.filter){case"wait":return!g.arrivee;case"in":return!!g.arrivee;case"off":return isOff(g);case"walk":return g.source==="sur place";default:return true}}
+
+function render(){
+  var G=state.guests;G.forEach(function(g){delete g._h});
+  var present=G.filter(function(g){return g.arrivee}).length;
+  var inv=G.filter(function(g){return g.source!=="sur place"});
+  var invIn=inv.filter(function(g){return g.arrivee}).length;
+  var off=G.filter(isOff),offIn=off.filter(function(g){return g.arrivee}).length;
+  var walk=G.filter(function(g){return g.source==="sur place"}).length;
+  $("sPresent").innerHTML=present;
+  $("sInv").textContent=invIn+"/"+inv.length;
+  $("sOff").textContent=offIn+"/"+off.length;
+  $("sWalk").textContent=walk;
+  $("sBar").style.width=(inv.length?Math.round(invIn/inv.length*100):0)+"%";
+  $("nAll").textContent=G.length;$("nWait").textContent=G.length-present;$("nIn").textContent=present;$("nWalk").textContent=walk;
+
+  var tokens=norm(state.q).split(" ").filter(Boolean);
+  var list=G.filter(function(g){return passFilter(g)&&match(g,tokens)});
+  list.sort(function(a,b){
+    if(!tokens.length&&state.filter==="in")return (b.arrivee||"").localeCompare(a.arrivee||"");
+    if(!!a.arrivee!==!!b.arrivee)return a.arrivee?1:-1;
+    return (a.n||9999)-(b.n||9999)||a.nom.localeCompare(b.nom,"fr")});
+  var LIMIT=60,html="";
+  list.slice(0,LIMIT).forEach(function(g){
+    var cls="card"+(g.arrivee?" arrived":"")+(g.source==="sur place"?" walkin":"");
+    var meta=[g.fonction,g.structure].filter(Boolean).join(" · ");
+    html+='<article class="'+cls+'"><div class="no">'+(g.n||"·")+'</div><div class="who"><div class="name">'+esc(g.nom)+'</div>'+
+      (meta?'<div class="meta">'+esc(meta)+'</div>':'')+
+      '<div class="tags"><span class="tag cat-'+esc(g.categorie)+'">'+esc(g.categorie)+'</span>'+
+      (g.source==="sur place"?'<span class="tag walk">Inscrit sur place</span>':'')+
+      (g.telephone?'<span class="tag">'+esc(g.telephone)+'</span>':'')+'</div></div><div class="act">'+
+      (g.arrivee?'<span class="time">✓ '+hhmm(g.arrivee)+'</span><button class="btn undo ghost" data-undo="'+g.id+'" type="button">Annuler</button>'
+                :'<button class="btn primary" data-in="'+g.id+'" type="button">Valider</button>')+
+      '<button class="btn edit ghost" data-edit="'+g.id+'" type="button">Modifier</button></div></article>';
+  });
+  if(list.length>LIMIT)html+='<div class="more">'+(list.length-LIMIT)+' autres résultats. Précisez la recherche.</div>';
+  if(!list.length){
+    html='<div class="empty">'+(tokens.length
+      ?'<p>Aucun invité ne correspond à « '+esc(state.q)+' ».</p><p>Vérifiez l\'orthographe ou cherchez par structure. Si la personne n\'est pas sur la liste, inscrivez-la.</p><button class="btn kola" data-walkin-q="1" type="button">Inscrire « '+esc(state.q)+' » sur place</button>'
+      :'<p>Aucun invité dans ce filtre.</p>')+'</div>';
+  }
+  $("results").innerHTML=html;
+
+  var arr=G.filter(function(g){return g.arrivee}).sort(function(a,b){return b.arrivee.localeCompare(a.arrivee)}).slice(0,15);
+  $("log").innerHTML=arr.length?arr.map(function(g){return '<li><time>'+hhmm(g.arrivee)+'</time><span>'+esc(g.nom)+(g.structure?' <span class="hint">('+esc(g.structure)+')</span>':'')+'</span></li>'}).join("")
+    :'<li><span class="hint" style="grid-column:1/-1">Les arrivées validées apparaîtront ici.</span></li>';
+}
+function $(id){return document.getElementById(id)}
+function byId(id){for(var i=0;i<state.guests.length;i++)if(state.guests[i].id===id)return state.guests[i]}
+var tT;function toast(t){var el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(tT);tT=setTimeout(function(){el.hidden=true},2600)}
+
+/* Actions */
+function checkIn(id){var g=byId(id);if(!g)return;g.arrivee=new Date().toISOString();save();toast("Arrivée validée : "+g.nom);
+  state.q="";$("q").value="";render();$("q").focus()}
+function undo(id){var g=byId(id);if(!g)return;confirmBox("Annuler l'arrivée de "+g.nom+" ?","Annuler l'arrivée",function(){g.arrivee=null;save();render();toast("Arrivée annulée")})}
+
+/* Panneaux */
+function openSheet(html){var o=$("overlay");o.innerHTML='<div class="sheet" role="dialog" aria-modal="true">'+html+'</div>';o.hidden=false;
+  var f=o.querySelector("input,select,textarea,button");if(f)setTimeout(function(){f.focus()},30)}
+function closeSheet(){var o=$("overlay");o.hidden=true;o.innerHTML="";}
+$("overlay").addEventListener("click",function(e){if(e.target.id==="overlay")closeSheet()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!$("overlay").hidden)closeSheet()});
+function confirmBox(msg,okLabel,fn,danger){
+  openSheet('<h2>Confirmer</h2><p>'+esc(msg)+'</p><div class="row"><button class="btn ghost" id="cNo" type="button">Retour</button><button class="btn '+(danger?'danger':'primary')+'" id="cYes" type="button">'+esc(okLabel)+'</button></div>');
+  $("cNo").onclick=closeSheet;$("cYes").onclick=function(){closeSheet();fn()};
+}
+function catOptions(sel){return CATS.map(function(c){return '<option'+(c===sel?' selected':'')+'>'+c+'</option>'}).join("")}
+
+function guestForm(g,isNew,prefill){
+  g=g||{nom:prefill||"",fonction:"",structure:"",categorie:"Invité",telephone:"",note:""};
+  openSheet('<h2>'+(isNew?'Inscription sur place':'Modifier la fiche')+'</h2>'+
+   (isNew?'<p>Pour une personne présente mais absente de la liste. Son arrivée est validée à l\'enregistrement.</p>':'')+
+   '<form id="gForm" novalidate><div style="display:flex;flex-direction:column;gap:12px">'+
+   '<div class="field"><label for="fNom">Nom complet *</label><input id="fNom" required value="'+esc(g.nom)+'" autocomplete="off"></div>'+
+   '<div class="grid2"><div class="field"><label for="fFonc">Fonction</label><input id="fFonc" value="'+esc(g.fonction)+'" autocomplete="off"></div>'+
+   '<div class="field"><label for="fStr">Structure</label><input id="fStr" value="'+esc(g.structure)+'" autocomplete="off"></div></div>'+
+   '<div class="grid2"><div class="field"><label for="fCat">Catégorie</label><select id="fCat">'+catOptions(g.categorie)+'</select></div>'+
+   '<div class="field"><label for="fTel">Téléphone</label><input id="fTel" type="tel" inputmode="tel" value="'+esc(g.telephone)+'" autocomplete="off"></div></div>'+
+   '<div class="field"><label for="fNote">Remarque</label><input id="fNote" value="'+esc(g.note)+'" autocomplete="off" placeholder="Accompagnant, place réservée…"></div>'+
+   '<div id="dupBox"></div>'+
+   '<div class="row">'+(!isNew?'<button class="btn danger" id="fDel" type="button">Supprimer</button>':'')+
+   '<button class="btn ghost" id="fCancel" type="button">Retour</button><button class="btn '+(isNew?'kola':'primary')+'" type="submit">'+(isNew?'Inscrire et valider l\'arrivée':'Enregistrer')+'</button></div></div></form>');
+  $("fCancel").onclick=closeSheet;
+  if(!isNew)$("fDel").onclick=function(){confirmBox("Supprimer définitivement la fiche de "+g.nom+" ?","Supprimer",function(){state.guests=state.guests.filter(function(x){return x.id!==g.id});save();render();toast("Fiche supprimée")},true)};
+  if(isNew){$("fNom").addEventListener("input",function(){
+    var t=norm(this.value).split(" ").filter(function(w){return w.length>2});
+    var d=t.length?state.guests.filter(function(x){var h=norm(x.nom);return t.every(function(w){return h.indexOf(w)>=0})}).slice(0,3):[];
+    $("dupBox").innerHTML=d.length?'<div class="warnbox">Déjà sur la liste : '+d.map(function(x){return '<b>'+esc(x.nom)+'</b>'+(x.arrivee?' (arrivé à '+hhmm(x.arrivee)+')':'')}).join(", ")+'. Vérifiez avant d\'inscrire.</div>':"";
+  });$("fNom").dispatchEvent(new Event("input"))}
+  $("gForm").addEventListener("submit",function(e){e.preventDefault();
+    var nom=$("fNom").value.trim();if(!nom){$("fNom").focus();$("fNom").style.borderColor="var(--bad)";return}
+    var t=isNew?mk(nom,"","","Invité","sur place"):g;
+    t.nom=nom;t.fonction=$("fFonc").value.trim();t.structure=$("fStr").value.trim();t.categorie=$("fCat").value;t.telephone=$("fTel").value.trim();t.note=$("fNote").value.trim();
+    if(isNew){t.arrivee=new Date().toISOString();state.guests.push(t)}
+    save();closeSheet();state.q="";$("q").value="";render();toast(isNew?"Inscrit et arrivé : "+t.nom:"Fiche enregistrée");
+  });
+}
+
+/* Import / export */
+function parseTable(text){
+  text=text.replace(/^﻿/,"");var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});if(!lines.length)return[];
+  var sep=lines[0].indexOf("\t")>=0?"\t":(lines[0].split(";").length>=lines[0].split(",").length?";":",");
+  function split(l){if(sep==="\t")return l.split("\t");var out=[],cur="",q=false;for(var i=0;i<l.length;i++){var c=l[i];
+    if(q){if(c==='"'){if(l[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}else if(c==='"')q=true;else if(c===sep){out.push(cur);cur=""}else cur+=c}out.push(cur);return out}
+  var rows=lines.map(split);var head=rows[0].map(norm);
+  var idx={nom:-1,prenom:-1,fonction:-1,structure:-1,categorie:-1,telephone:-1};
+  head.forEach(function(h,i){
+    if(idx.prenom<0&&/^prenom/.test(h))idx.prenom=i;
+    else if(idx.nom<0&&/(^nom|nom complet|invite|participant|name)/.test(h))idx.nom=i;
+    else if(idx.fonction<0&&/(fonction|titre|poste|qualite)/.test(h))idx.fonction=i;
+    else if(idx.structure<0&&/(structure|institution|organisation|organisme|entreprise|service|ministere)/.test(h))idx.structure=i;
+    else if(idx.categorie<0&&/(categ|type|statut)/.test(h))idx.categorie=i;
+    else if(idx.telephone<0&&/(tel|phone|contact)/.test(h))idx.telephone=i;
+  });
+  var hasHead=idx.nom>=0;if(!hasHead){idx={nom:0,prenom:-1,fonction:1,structure:2,categorie:3,telephone:4}}else rows=rows.slice(1);
+  return rows.map(function(r){function v(k){return idx[k]>=0?(r[idx[k]]||"").trim():""}
+    var nom=v("nom");if(v("prenom"))nom=v("prenom")+" "+nom;if(!nom.trim())return null;
+    var g=mk(nom,v("fonction"),v("structure"),v("categorie")||"Invité","liste");g.telephone=v("telephone");return g}).filter(Boolean);
+}
+function toCSV(){
+  var H=["N°","Nom","Fonction","Structure","Catégorie","Téléphone","Origine","Statut","Heure d'arrivée","Remarque"];
+  var rows=state.guests.slice().sort(function(a,b){return (a.n||9999)-(b.n||9999)||a.nom.localeCompare(b.nom,"fr")}).map(function(g){
+    return [g.n||"SP",g.nom,g.fonction,g.structure,g.categorie,g.telephone,g.source==="sur place"?"Inscrit sur place":"Liste d'invitation",g.arrivee?"Présent":"Absent",g.arrivee?hhmm(g.arrivee):"",g.note]});
+  return "﻿"+[H].concat(rows).map(function(r){return r.map(function(c){c=(c||"").toString();return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(";")}).join("\r\n");
+}
+function download(name,content,type){
+  try{var b=new Blob([content],{type:type});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){}
+}
+function stamp(){var d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+"_"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0")}
+function exportSheet(kind){
+  var content=kind==="csv"?toCSV():JSON.stringify({v:1,exported:new Date().toISOString(),guests:state.guests},null,1);
+  var name=(kind==="csv"?"presences_JIMT2026_":"sauvegarde_JIMT2026_")+stamp()+(kind==="csv"?".csv":".json");
+  download(name,content,kind==="csv"?"text/csv;charset=utf-8":"application/json");
+  openSheet('<h2>'+(kind==="csv"?'Export des présences':'Sauvegarde complète')+'</h2><p>Le fichier <b>'+name+'</b> a été proposé au téléchargement. S\'il ne s\'est pas enregistré, copiez le contenu ci-dessous et collez-le dans un fichier.</p>'+
+    '<div class="field"><label for="exTxt">Contenu</label><textarea id="exTxt" readonly>'+esc(content)+'</textarea></div>'+
+    '<div class="row"><button class="btn ghost" id="exClose" type="button">Fermer</button><button class="btn primary" id="exCopy" type="button">Copier</button></div>');
+  $("exClose").onclick=closeSheet;
+  $("exCopy").onclick=function(){var t=$("exTxt");var p=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(content):Promise.reject();
+    p.then(function(){toast("Copié")},function(){t.focus();t.select();toast("Texte sélectionné : copiez-le")})};
+}
+function menu(){
+  openSheet('<h2>Liste des invités et sauvegarde</h2>'+
+   '<div class="field"><label for="impTxt">Importer la liste des invités</label><textarea id="impTxt" placeholder="Collez ici les colonnes copiées depuis Excel, avec la ligne d\'en-tête :\nNom ; Fonction ; Structure ; Catégorie ; Téléphone"></textarea>'+
+   '<span class="hint">Colonnes reconnues : Nom (ou Prénom + Nom), Fonction, Structure, Catégorie, Téléphone. Sans en-tête, cet ordre est utilisé.</span></div>'+
+   '<div class="row" style="justify-content:flex-start"><label class="btn ghost" for="impFile" style="display:inline-flex;align-items:center">Choisir un fichier CSV ou sauvegarde</label><input id="impFile" type="file" accept=".csv,.txt,.json,text/csv,application/json" hidden>'+
+   '<button class="btn primary" id="impGo" type="button">Ajouter à la liste</button></div>'+
+   '<div id="impMsg"></div><hr style="border:0;border-top:1px solid var(--line);width:100%">'+
+   '<div class="row" style="justify-content:flex-start"><button class="btn primary" id="exPdf" type="button">Exporter en PDF</button><button class="btn primary" id="exCsv" type="button">Exporter les présences (CSV Excel)</button><button class="btn" id="exJson" type="button">Sauvegarde complète</button></div>'+
+   '<span class="hint">Faites une sauvegarde complète avant l\'ouverture, puis un export CSV toutes les 30 minutes.</span>'+
+   '<hr style="border:0;border-top:1px solid var(--line);width:100%"><div class="row" style="justify-content:space-between"><button class="btn danger" id="rst" type="button">Vider la liste</button><button class="btn ghost" id="mClose" type="button">Fermer</button></div>');
+  $("mClose").onclick=closeSheet;$("exPdf").onclick=pdfSheet;$("exCsv").onclick=function(){exportSheet("csv")};$("exJson").onclick=function(){exportSheet("json")};
+  $("rst").onclick=function(){confirmBox("Supprimer tous les invités et toutes les arrivées de cet appareil ? Exportez d'abord.","Tout supprimer",function(){state.guests=[];save();render();toast("Liste vidée")},true)};
+  function addRows(rows,replace){
+    if(replace){state.guests=rows}else{var seen={};state.guests.forEach(function(g){seen[norm(g.nom)+"|"+norm(g.structure)]=1});
+      var added=0;rows.forEach(function(g){var k=norm(g.nom)+"|"+norm(g.structure);if(!seen[k]){seen[k]=1;state.guests.push(g);added++}});rows.added=added}
+    save();render();
+  }
+  $("impGo").onclick=function(){var rows=parseTable($("impTxt").value);if(!rows.length){$("impMsg").innerHTML='<div class="warnbox">Aucune ligne lisible. Collez au moins une colonne Nom.</div>';return}
+    addRows(rows);closeSheet();toast(rows.added+" invités ajoutés ("+(rows.length-rows.added)+" doublons ignorés)")};
+  $("impFile").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var t=r.result;
+    if(/\.json$/i.test(f.name)){try{var d=JSON.parse(t);if(!Array.isArray(d.guests))throw 0;
+        confirmBox("Restaurer la sauvegarde ("+d.guests.length+" fiches) ? La liste actuelle sera remplacée.","Restaurer",function(){addRows(d.guests,true);toast("Sauvegarde restaurée")},true)}
+      catch(e){$("impMsg").innerHTML='<div class="warnbox">Ce fichier n\'est pas une sauvegarde de cette application.</div>'}}
+    else{$("impTxt").value=t;$("impMsg").innerHTML='<span class="hint">Fichier chargé. Vérifiez puis touchez « Ajouter à la liste ».</span>'}};r.readAsText(f,"utf-8")};
+}
+
+
+function pdfSheet(){
+  openSheet('<h2>Exporter en PDF</h2><p>Choisissez le contenu de la liste. La fenêtre d\'impression s\'ouvre ensuite : choisissez « Enregistrer au format PDF » comme imprimante.</p>'+
+   '<div class="field"><label for="pdfSel">Contenu</label><select id="pdfSel"><option value="in">Présents uniquement (par heure d\'arrivée)</option><option value="all">Tous les invités (présents et absents)</option><option value="wait">Absents uniquement</option><option value="walk">Inscrits sur place uniquement</option></select></div>'+
+   '<div class="row"><button class="btn ghost" id="pdfNo" type="button">Retour</button><button class="btn primary" id="pdfGo" type="button">Générer le PDF</button></div>');
+  $("pdfNo").onclick=closeSheet;
+  $("pdfGo").onclick=function(){var k=$("pdfSel").value;closeSheet();buildPrint(k);setTimeout(function(){try{window.print()}catch(e){toast("Impression indisponible sur ce navigateur")}},150)};
+}
+function buildPrint(kind){
+  var G=state.guests,L;
+  var titles={in:"Liste des présents",all:"Liste de tous les invités",wait:"Liste des absents",walk:"Liste des inscrits sur place"};
+  if(kind==="in")L=G.filter(function(g){return g.arrivee}).sort(function(a,b){return a.arrivee.localeCompare(b.arrivee)});
+  else{L=G.filter(function(g){return kind==="all"||(kind==="wait"?!g.arrivee:g.source==="sur place")}).sort(function(a,b){return (a.n||9999)-(b.n||9999)||a.nom.localeCompare(b.nom,"fr")})}
+  var present=G.filter(function(g){return g.arrivee}).length,inv=G.filter(function(g){return g.source!=="sur place"}),invIn=inv.filter(function(g){return g.arrivee}).length;
+  var off=G.filter(isOff),offIn=off.filter(function(g){return g.arrivee}).length,walk=G.filter(function(g){return g.source==="sur place"}).length;
+  var now=new Date(),d=String(now.getDate()).padStart(2,"0")+"/"+String(now.getMonth()+1).padStart(2,"0")+"/"+now.getFullYear()+" à "+hhmm(now.toISOString());
+  var rows=L.map(function(g,i){return '<tr><td class="num">'+(g.n||"SP")+'</td><td><b>'+esc(g.nom)+'</b>'+(g.note?'<br><span style="color:#555">'+esc(g.note)+'</span>':'')+'</td><td>'+esc(g.fonction)+'</td><td>'+esc(g.structure)+'</td><td>'+esc(g.categorie)+(g.source==="sur place"?'<br><i>sur place</i>':'')+'</td><td>'+esc(g.telephone)+'</td><td class="h">'+(g.arrivee?hhmm(g.arrivee):'Absent')+'</td></tr>'}).join("");
+  $("printArea").innerHTML='<h1>Journée internationale de la Médecine traditionnelle 2026</h1>'+
+   '<p class="sub">ASG · IRDPMAG · IRBAG · FSTS (UGANC) · 10 octobre 2026 · Cité des Sciences, Rogbanè</p>'+
+   '<p class="theme">Thème : « Réflexion sur les efforts de recherche et de développement de la médecine traditionnelle en vue de la réalisation de la couverture sanitaire universelle dans la Région africaine »</p>'+
+   '<h2 style="font-size:12pt;margin:0 0 6px">'+titles[kind]+' ('+L.length+')</h2>'+
+   '<div class="sum"><span>Présents : <b>'+present+'</b></span><span>Invités arrivés : <b>'+invIn+' / '+inv.length+'</b></span><span>Officiels et intervenants : <b>'+offIn+' / '+off.length+'</b></span><span>Inscrits sur place : <b>'+walk+'</b></span></div>'+
+   '<table><thead><tr><th>N°</th><th>Nom</th><th>Fonction</th><th>Structure</th><th>Catégorie</th><th>Téléphone</th><th>Arrivée</th></tr></thead><tbody>'+(rows||'<tr><td colspan="7">Aucune personne dans cette liste.</td></tr>')+'</tbody></table>'+
+   '<div class="foot"><span>Édité le '+d+' · Service accueil</span><span>Visa du responsable : ____________________</span></div>';
+  document.title="JIMT2026_"+titles[kind].replace(/ /g,"_")+"_"+stamp();
+}
+window.addEventListener("afterprint",function(){document.title="Accueil JIMT 2026"});
+
+/* Évènements */
+$("q").addEventListener("input",function(){state.q=this.value;render()});
+$("q").addEventListener("keydown",function(e){if(e.key==="Enter"){var b=$("results").querySelector("[data-in]");if(b&&$("results").querySelectorAll("[data-in]").length===1)b.click()}});
+$("qClear").onclick=function(){state.q="";$("q").value="";render();$("q").focus()};
+document.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){state.filter=c.dataset.f;document.querySelectorAll(".chip").forEach(function(x){x.setAttribute("aria-pressed",x===c?"true":"false")});render()}});
+$("results").addEventListener("click",function(e){var t=e.target.closest("button");if(!t)return;
+  if(t.dataset.in)checkIn(t.dataset.in);else if(t.dataset.undo)undo(t.dataset.undo);else if(t.dataset.edit)guestForm(byId(t.dataset.edit),false);else if(t.dataset.walkinQ)guestForm(null,true,state.q)});
+$("btnWalkin").onclick=function(){guestForm(null,true,state.q)};
+$("btnMenu").onclick=menu;
+$("btnFull").onclick=function(){var d=document.documentElement;try{if(!document.fullscreenElement){(d.requestFullscreen||d.webkitRequestFullscreen).call(d)}else document.exitFullscreen()}catch(e){toast("Plein écran indisponible sur ce navigateur")}};
+
+/* Écran toujours allumé si le navigateur l'autorise */
+var lock=null;function wake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){lock=l},function(){})}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")wake()});wake();
+
+load();save();render();
+})();
+</script>
+
+</body></html>
